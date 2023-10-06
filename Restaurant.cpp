@@ -35,6 +35,7 @@ class imp_res : public Restaurant
 			delete cus;
 		}
 		void insert_next(customer* positionX,customer* cus){
+			
 			cus->prev=positionX;
 			cus->next=positionX->next;
 			positionX->next->prev=cus;
@@ -118,6 +119,7 @@ class imp_res : public Restaurant
 		void printSubList(int indexBegin,int size){
 			// xuất thông tin chuỗi con từ vị trí indexbegin tính từ positionX
 			// với size phần tử
+			
 			for(int i=0;i<size;i++){
 				cout<<customerAt(positionX,i+indexBegin)->name<<"-"<<customerAt(positionX,i+indexBegin)->energy<<"/n";
 
@@ -354,27 +356,40 @@ class imp_res : public Restaurant
 
 			if(countInDesk<4) return;
 			int indexBegin=0;
-			int size=4;
+			int size=0;
+			int sizeMax=0;
 			int sumMin=INT_MAX;
 			int sum=0;
 			for(int i=0;i<=countInDesk-4;i++){
 				customer*tmp=customerAt(positionX,i);
-				indexBegin=i;
 				size=0;
 				sum=0;
-				do{
+				
+				while(size<4||(tmp->energy<0&&tmp!=positionX)){
 					sum+=tmp->energy;
 					size++;
 					tmp=tmp->next;
 				}
-				while(size<4);
-				if(tmp->next==customerAt(positionX,i)){
-					printSubList(indexBegin,size);
-					return;
+				// if(tmp->next==customerAt(positionX,i)&&sum<=sumMin){
+				// 	printSubList(indexBegin,size);
+				// 	return;
+				// }
+				// while(tmp->energy<0&&tmp!=positionX){
+				// 	sum+=tmp->energy;
+				// 	size++;
+				// 	tmp=tmp->next;
+				// }
+				if(sum==sumMin&&size>=sizeMax){
+					sizeMax=size;
+					indexBegin=i;
 				}
-				
+				if(sum<sumMin){
+					sizeMax=size;
+					sumMin=sum;
+					indexBegin=i;
+				}
 			}
-
+			printSubList(indexBegin,sizeMax);
 		}
 
 
