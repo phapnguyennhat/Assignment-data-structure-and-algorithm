@@ -27,8 +27,8 @@ class imp_res : public Restaurant
 			countInQueue=(head==headCustomerInQueue)? countInQueue-1:countInQueue;
 			// positionX=(head==positionX	&&cus->energy>0) ?cus->next:cus->prev; 
 			// head=(head==cus)? head->next:head;
-			if(head==positionX && cus->energy>0) positionX=positionX->next;
-			else if(head==positionX && cus->energy<0) positionX=positionX->prev;
+			if(head==positionX && cus->energy>0) positionX=cus->next;
+			else if(head==positionX && cus->energy<0) positionX=cus->prev;
 			else if(head==cus) head=head->next;
 			cus->prev->next=cus->next;
 			cus->next->prev=cus->prev;
@@ -133,14 +133,15 @@ class imp_res : public Restaurant
 						cout<<tmp->name<<"-"<<tmp->energy<<"/n";
 						customer* delCus=positionX;
 						do{
-							
+							if(delCus->name==tmp->name) break;
+							delCus=delCus->next;
 						}
 						while(delCus!=positionX);
 						tmp=tmp->next;
 						// loi cho nay
 
 						remove(orderInDesk,tmp->prev);
-						remove(positionX,tmp->prev);
+						remove(positionX,delCus);
 					}
 					tmp=tmp->prev;
 				}
@@ -179,6 +180,8 @@ class imp_res : public Restaurant
 		~imp_res(){
 			while(positionX!=NULL){
 				remove(positionX,positionX);
+			}
+			while(orderInDesk!=NULL){
 				remove (orderInDesk,orderInDesk);
 			}
 			while(headCustomerInQueue!=NULL){
@@ -442,8 +445,10 @@ class imp_res : public Restaurant
 			}
 			kickCustomer(abs(eThuatSu)>=abs(eOanLinh));
 			while(countInDesk<MAXSIZE&&headCustomerInQueue!=NULL){
-				RED(headCustomerInQueue->name,headCustomerInQueue->energy);
+				string name=headCustomerInQueue->name;
+				int energy=headCustomerInQueue->energy;
 				remove(headCustomerInQueue,headCustomerInQueue);
+				RED(name,energy);
 			}
 		}
 		void LIGHT(int num)
