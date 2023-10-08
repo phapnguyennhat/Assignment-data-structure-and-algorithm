@@ -1,6 +1,5 @@
 #include "main.h"
 
-extern int MAXSIZE;
 
 class imp_res : public Restaurant
 {
@@ -117,7 +116,7 @@ class imp_res : public Restaurant
 				do{
 					bool check=(isOanLinh)? tmp->energy<0:tmp->energy>0;
 					if(check){
-						cout<<tmp->name<<"-"<<tmp->energy<<"/n";
+						cout<<tmp->name<<"-"<<tmp->energy<<"\n";
 						tmp=tmp->next;
 						remove(headCustomerInQueue,tmp->prev);
 					}
@@ -130,7 +129,7 @@ class imp_res : public Restaurant
 				do{
 					bool check=(isOanLinh)? tmp->energy<0:tmp->energy>0;
 					if(check){
-						cout<<tmp->name<<"-"<<tmp->energy<<"/n";
+						cout<<tmp->name<<"-"<<tmp->energy<<"\n";
 						customer* delCus=positionX;
 						do{
 							if(delCus->name==tmp->name) break;
@@ -162,7 +161,7 @@ class imp_res : public Restaurant
 			int index=indexMin;
 			do{
 				if(index>=indexBegin&&index<indexBegin+size){
-					cout<<customerAt(positionX,index)->name<<"-"<<customerAt(positionX,index)->energy<<"/n";
+					cout<<customerAt(positionX,index)->name<<"-"<<customerAt(positionX,index)->energy<<"\n";
 				}
 				index=(index+1)%countInDesk;
 			}
@@ -297,8 +296,10 @@ class imp_res : public Restaurant
 			}
 
 			while(countInDesk<MAXSIZE && headCustomerInQueue!=NULL){
-				RED(headCustomerInQueue->name,headCustomerInQueue->energy);
+				string name=headCustomerInQueue->name;
+				int energy=headCustomerInQueue->energy;
 				remove(headCustomerInQueue,headCustomerInQueue);
+				RED(name,energy);
 			}
 			
 		}
@@ -374,7 +375,7 @@ class imp_res : public Restaurant
 		{
 			cout << "unlimited_void" << endl;
 			// tìm dãy con liên tiếp dài nhất (có độ dài tối thiểu là 4)mà có tổng energy bé nhất
-			// sau đó in thông tin dãy vừa tìm đc bắt đầu từ phần tử bé nhất "name-energy/n"
+			// sau đó in thông tin dãy vừa tìm đc bắt đầu từ phần tử bé nhất "name-energy\n"
 			// trường hợp nhiều dãy con thỏa thì lấy dãy cuối cùng tìm đc
 
 			if(countInDesk<4) return;
@@ -420,7 +421,7 @@ class imp_res : public Restaurant
 		{
 			cout << "domain_expansion" << endl;
 			// tính tổng energy của chú linh và chú thuật sư tổng trị td ai bé hơn sẽ bị đuỏi về
-			// và in ra thông tin "name-energy/n" từ kh đến sau đến kh đến đầu tiên
+			// và in ra thông tin "name-energy\n" từ kh đến sau đến kh đến đầu tiên
 			// tức là đuổi từ queue đén trong bàn
 			// sau đó bố trí khách từ hàng đợi vào chô trống
 			customer* desk=positionX;
@@ -457,7 +458,7 @@ class imp_res : public Restaurant
 			if(num==0&&headCustomerInQueue!=NULL){
 				customer* tmp=headCustomerInQueue;
 				do{
-					cout<<tmp->name<<"-"<<tmp->energy<<"/n";
+					cout<<tmp->name<<"-"<<tmp->energy<<"\n";
 					tmp=tmp->next;
 				}
 				while(tmp!=headCustomerInQueue);
@@ -465,7 +466,7 @@ class imp_res : public Restaurant
 			if(num>0&&positionX!=NULL){
 				customer*tmp=positionX;
 				do{
-					cout<<tmp->name<<"-"<<tmp->energy<<"/n";
+					cout<<tmp->name<<"-"<<tmp->energy<<"\n";
 					tmp=tmp->next;
 				}
 				while(tmp!=positionX);
@@ -473,7 +474,7 @@ class imp_res : public Restaurant
 			else if(num<0&&positionX!=NULL){
 				customer*tmp=positionX;
 				do{
-					cout<<tmp->name<<"-"<<tmp->energy<<"/n";
+					cout<<tmp->name<<"-"<<tmp->energy<<"\n";
 					tmp=tmp->prev;
 				}
 				while(tmp!=positionX);
