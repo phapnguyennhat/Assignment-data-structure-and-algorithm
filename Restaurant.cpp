@@ -1,27 +1,47 @@
 #include "main.h"
-
-
+// extern int MAXSIZE;
 class imp_res : public Restaurant
 {
 	private:
 		customer* positionX;
 		customer* headCustomerInQueue;
-		customer* orderInDesk;
+		customer* order;
 		int countInDesk;
 		int countInQueue;
 
 	private:
+		bool prior(customer* cusj, customer* cusj_incr){
+			// cusj-> energy> cusj_incr
+			// neu bang thi stt cua j phai o truoc j_incr
+			if(abs(cusj->energy)>abs(cusj_incr->energy)) return true;
+			else if(abs(cusj->energy)==abs(cusj_incr->energy) && sttOfCus(cusj->name)< sttOfCus(cusj_incr->name) ) return true;
+			return false;
+		}
+		int sttOfCus(string name){
+			int res=0;
+			customer* tmp=order;
+			do{
+				if(tmp->name==name) return res;
+				tmp=tmp->next;
+				res++;
+			}
+			while(tmp!=order);
+			return -1;
+		}
+		customer* findCus(customer* head, string name){
+			if(head==NULL) return NULL;
+			customer* tmp=head;
+			do{
+				if(tmp->name==name) return tmp;
+				tmp=tmp->next;
+			}
+			while(tmp!=head);
+			return NULL;
+		}
 		void remove(customer *& head,customer* cus){
 			// xóa phần tử cus trong danh sach lien ket (inDesk,queue,order)
-			// if(head->next==head && head==cus){
-			// 	head->next=nullptr;
-			// 	head->prev=nullptr;
-			// 	delete head;
-			// 	countInDesk=(head==positionX)? 0:countInDesk;
-			// 	countInQueue=(head==headCustomerInQueue)? 0:countInQueue;
-			// 	head=NULL;
-			// 	return;
-			// }
+
+			if(head==NULL||cus==NULL) return;
 			countInDesk=(head==positionX)? countInDesk-1:countInDesk;
 			countInQueue=(head==headCustomerInQueue)? countInQueue-1:countInQueue;
 			// positionX=(head==positionX	&&cus->energy>0) ?cus->next:cus->prev; 
@@ -36,7 +56,8 @@ class imp_res : public Restaurant
 			delete cus;
 			headCustomerInQueue=(countInQueue==0)? NULL:headCustomerInQueue;
 			positionX=(countInDesk==0)? NULL:positionX;
-			orderInDesk=(countInDesk==0)? NULL: orderInDesk;
+			order=(countInDesk==0&&countInQueue==0)? NULL: order;
+
 		}
 		void insert_next(customer*& pos,customer* cus){
 			if(pos==NULL){
@@ -71,13 +92,14 @@ class imp_res : public Restaurant
 			countInQueue=(pos==headCustomerInQueue)? countInQueue+1: countInQueue;
 		}
 		customer* customerAt(customer* head,int index){
-
 			for(int i=0;i<index;i++){
 				head=head->next;
 			}
 			return head;
 		}
 		void swap(customer* cus1,customer* cus2){
+			if(positionX==cus1) positionX=cus2;
+			else if(positionX==cus2) positionX=cus1;
 			string tmp=cus1->name;
 			cus1->name=cus2->name;
 			cus2->name=tmp;
@@ -90,7 +112,7 @@ class imp_res : public Restaurant
 			// trả về số swap thực hiện
 			int res=0;
 			for(int i=incr;i<size;i+=incr){
-				for(int j=i;j>=incr&& abs(customerAt(head,j)->energy)>abs(customerAt(head,j-incr)->energy);j-=incr){
+				for(int j=i;j>=incr&& prior(customerAt(head,j),customerAt(head,j-incr));j-=incr){
 					// swap
 					res++;
 					swap(customerAt(head,j),customerAt(head,j-incr));
@@ -99,6 +121,7 @@ class imp_res : public Restaurant
 			return res;
 		}
 		int shellsort(customer* head,int size){
+			// sửa lại thứ tự
 			int res=0;
 			for(int i=size/2;i>2;i/=2){
 				for(int j=0;j<i;j++){
@@ -111,41 +134,27 @@ class imp_res : public Restaurant
 		void kickCustomer(bool isOanLinh)
 		{
 			// đuổi khách hàng từ vị khách mới đến cho đến kh đến sớm nhất
-			if(headCustomerInQueue!=NULL){
-				customer*tmp=headCustomerInQueue->prev;
+		
+			if(order!=NULL){
+				customer*tmp=order->prev;
 				do{
 					bool check=(isOanLinh)? tmp->energy<0:tmp->energy>0;
 					if(check){
-						cout<<tmp->name<<"-"<<tmp->energy<<"\n";
-						tmp=tmp->next;
-						remove(headCustomerInQueue,tmp->prev);
-					}
-					tmp=tmp->prev;
-				}
-				while(headCustomerInQueue!=NULL&&tmp!=headCustomerInQueue->prev);
-			}
-			if(orderInDesk!=NULL){
-				customer*tmp=orderInDesk->prev;
-				do{
-					bool check=(isOanLinh)? tmp->energy<0:tmp->energy>0;
-					if(check){
-						cout<<tmp->name<<"-"<<tmp->energy<<"\n";
-						customer* delCus=positionX;
-						do{
-							if(delCus->name==tmp->name) break;
-							delCus=delCus->next;
+						tmp->print();
+						if(findCus(headCustomerInQueue,tmp->name)!=NULL){
+							remove(headCustomerInQueue,findCus(headCustomerInQueue,tmp->name));
 						}
-						while(delCus!=positionX);
+						else if(findCus(positionX,tmp->name)!=NULL){
+							remove(positionX,findCus(positionX,tmp->name));
+						}
 						tmp=tmp->next;
-						// loi cho nay
-
-						remove(orderInDesk,tmp->prev);
-						remove(positionX,delCus);
+						remove(order,tmp->prev);
 					}
 					tmp=tmp->prev;
 				}
-				while(orderInDesk!=NULL&&tmp!=orderInDesk->prev);
+				while(order!=NULL&&tmp!=order->prev);
 			}
+				
 		}
 		void printSubList(int indexBegin,int size){
 			// indexbegin la vi tri bat dau tinh tu position x
@@ -172,7 +181,7 @@ class imp_res : public Restaurant
 		imp_res() {
 			positionX=NULL;
 			headCustomerInQueue=NULL;
-			orderInDesk=NULL;
+			order=NULL;
 			countInDesk=0;
 			countInQueue=0;
 		}
@@ -180,8 +189,8 @@ class imp_res : public Restaurant
 			while(positionX!=NULL){
 				remove(positionX,positionX);
 			}
-			while(orderInDesk!=NULL){
-				remove (orderInDesk,orderInDesk);
+			while(order!=NULL){
+				remove (order,order);
 			}
 			while(headCustomerInQueue!=NULL){
 				remove(headCustomerInQueue,headCustomerInQueue);
@@ -196,7 +205,7 @@ class imp_res : public Restaurant
 			// thiên thượng điện hạ, duy ngã độc tôn
 			// reject customer whose name is on the desk or the queue
 			if(positionX!=NULL){
-				customer*tmp=positionX;
+				customer* tmp=positionX;
 				do{
 					if(tmp->name==name) return;
 					tmp=tmp->next;
@@ -204,22 +213,24 @@ class imp_res : public Restaurant
 				while(tmp!=positionX);
 			}
 			if(headCustomerInQueue!=NULL){
-		
-				customer*tmp=headCustomerInQueue;
+				customer* tmp=headCustomerInQueue;
 				do{
-					if(tmp->name==name) return;
+					if (tmp->name==name) return;
 					tmp=tmp->next;
 				}
 				while(tmp!=headCustomerInQueue);
 			}
-
-			cout<<name<<" "<<energy<<endl;
+			
+ 
+			// cout<<name<<" "<<energy<<endl;
 			customer*cus=new customer(name,energy,nullptr,nullptr);
 			customer*cusOrder=new customer(name ,energy,nullptr,nullptr);
 			// đưa khách vào bàn hoặc vào hàng đợi
 			if(countInDesk<MAXSIZE/2){
 				// chen khach vao ban
-				insert_pre(orderInDesk,cusOrder);		//push back
+				if(findCus(order,name)==NULL){
+					insert_pre(order,cusOrder);		//push back
+				}
 				if(positionX==NULL||energy>=positionX->energy){
 					// chieu dong ho
 					insert_next(positionX,cus);
@@ -234,12 +245,18 @@ class imp_res : public Restaurant
 			}
 			else{
 				if(countInDesk==MAXSIZE && countInQueue<MAXSIZE){
-				
+				// them vao hang cho
 					insert_pre(headCustomerInQueue,cus);
+					if(findCus(order,name)==NULL){
+						insert_pre(order,cusOrder);		//push back
+					}
+
 				}
 				else if(countInDesk<MAXSIZE){
 					// dua vao ban theo chien thuat 2
-					insert_pre(orderInDesk,cusOrder);
+					if (findCus(order,name)==NULL){
+						insert_pre(order,cusOrder);
+					}
 					int sub=0;
 					customer* RES=positionX;
 					customer* tmp=positionX;
@@ -271,37 +288,31 @@ class imp_res : public Restaurant
 
 			if(num>=countInDesk){
 				while(positionX!=NULL){
-					remove(positionX,positionX);
-					remove(orderInDesk,orderInDesk);
+					remove(positionX,findCus(positionX,order->name));
+					remove(order,order);
 				}
 			
 			}
 			else{
 				while(num!=0){
-					customer* tmp=positionX;
-					do{
-						if(tmp->name==orderInDesk->name){
-							// popfront orderindex
-							remove(orderInDesk,orderInDesk);
-							break;
-
-						}
-						tmp=tmp->next;
-					}
-					while(tmp!=positionX);
-					
-					remove(positionX,tmp);
+					// xoa tu order den desk;
+					// duoi tu kh den som nhat o trong ban an
+					remove (positionX,findCus(positionX,order->name));
+					remove (order,order);
 					num--;
 				}
 			}
-
-			while(countInDesk<MAXSIZE && headCustomerInQueue!=NULL){
-				string name=headCustomerInQueue->name;
-				int energy=headCustomerInQueue->energy;
-				remove(headCustomerInQueue,headCustomerInQueue);
-				RED(name,energy);
+			// them kh tu hang doi vao ban
+			if(countInQueue==0) return;
+			customer* tmp=order;
+			while(findCus(positionX,tmp->name)!=NULL){
+				tmp=tmp->next;
 			}
-			
+			while(countInDesk!=MAXSIZE && countInQueue!=0){
+				remove(headCustomerInQueue,findCus(headCustomerInQueue,tmp->name));
+				RED(tmp->name,tmp->energy);
+				tmp=tmp->next;
+			}
 		}
 		void PURPLE()
 		{
@@ -310,6 +321,7 @@ class imp_res : public Restaurant
 			// tìm index có energy cao nhất đầu tiên
 			// dùng shell sort sắp xếp từ đầu hàng chờ đến index
 			// đếm số lần swap (count) sau đó dùng lệnh blue(count%MAXSIZE)
+			if (headCustomerInQueue==NULL) return;
 			customer* tmp=headCustomerInQueue;
 			int absMaxEnergy=abs(headCustomerInQueue->energy);
 			int indexMax=0;
@@ -445,11 +457,16 @@ class imp_res : public Restaurant
 				while(queue!=headCustomerInQueue);
 			}
 			kickCustomer(abs(eThuatSu)>=abs(eOanLinh));
-			while(countInDesk<MAXSIZE&&headCustomerInQueue!=NULL){
-				string name=headCustomerInQueue->name;
-				int energy=headCustomerInQueue->energy;
-				remove(headCustomerInQueue,headCustomerInQueue);
-				RED(name,energy);
+			// them kh tu hang doi vao ban
+			if(countInQueue==0) return;
+			customer* tmp=order;
+			while(findCus(positionX,tmp->name)!=NULL){
+				tmp=tmp->next;
+			}
+			while(countInDesk!=MAXSIZE && countInQueue!=0){
+				remove(headCustomerInQueue,findCus(headCustomerInQueue,tmp->name));
+				RED(tmp->name,tmp->energy);
+				tmp=tmp->next;
 			}
 		}
 		void LIGHT(int num)
@@ -458,7 +475,7 @@ class imp_res : public Restaurant
 			if(num==0&&headCustomerInQueue!=NULL){
 				customer* tmp=headCustomerInQueue;
 				do{
-					cout<<tmp->name<<"-"<<tmp->energy<<"\n";
+					tmp->print();
 					tmp=tmp->next;
 				}
 				while(tmp!=headCustomerInQueue);
@@ -466,7 +483,7 @@ class imp_res : public Restaurant
 			if(num>0&&positionX!=NULL){
 				customer*tmp=positionX;
 				do{
-					cout<<tmp->name<<"-"<<tmp->energy<<"\n";
+					tmp->print();
 					tmp=tmp->next;
 				}
 				while(tmp!=positionX);
@@ -474,7 +491,7 @@ class imp_res : public Restaurant
 			else if(num<0&&positionX!=NULL){
 				customer*tmp=positionX;
 				do{
-					cout<<tmp->name<<"-"<<tmp->energy<<"\n";
+					tmp->print();
 					tmp=tmp->prev;
 				}
 				while(tmp!=positionX);
